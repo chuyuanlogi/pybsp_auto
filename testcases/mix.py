@@ -42,11 +42,13 @@ def av_process_action(ns):
     ns.d.meeting_onoff_video()
     time.sleep(3)
 
-@c.pre_main
-def main():
+def run():
     c.run_test(initfunc = meetup_power_init, actionfunc = meetup_power_action)
     c.run_test(initfunc = av_process_init, actionfunc = av_process_action)
     c.end_test()
 
+def test():
+    print("yes {}".format(123))
+
 if __name__ == '__main__':
-    main()
+    run()
