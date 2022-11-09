@@ -19,7 +19,7 @@ def meetup_power_init():
     ns.ha.set_url(url)
     ns.video_start = 4
     ns.video_current = 4
-    ns.video_end = 10
+    ns.video_end = 6
     ns.d = c.sega.dev()
     ns.d.open("2123FDGM05D2")
     ns.d.push_file("keep_video", "/data/local/tmp/keep_video")
