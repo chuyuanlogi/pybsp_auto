@@ -3,6 +3,8 @@ import threading
 import time
 import ipaddress
 from types import SimpleNamespace as sns
+import pathlib
+from os.path import exists
 
 def _logcat(d, file):
     if d is None or file is None:
@@ -55,6 +57,11 @@ def __run_test(initfunc, actionfunc):
     # default vaule is 0
     #
     # tcid: the test description
+    #
+    # expect:
+    #   0: ignore expectation
+    #   1: has expectiation function
+    # default value is 0
 
     if not hasattr(ns, 'repeat'):
         ns.repeat = 0
@@ -97,6 +104,12 @@ def run_test(initfunc, actionfunc):
         return
 
     t = threading.Thread(target = __run_test, args = (initfunc, actionfunc))
+    g_test_threads.append(t)
+    t.start()
+
+def append_thread(t):
+    if t == None:
+        return
     g_test_threads.append(t)
     t.start()
 
@@ -200,16 +213,48 @@ class android_device:
 
         return self.device.shell(*args)
 
+    def shell2(self, *args):
+        if self.device == None:
+            raise Exception("device is null")
+
+        return self.device.shell2(*args)
+
     def log_message(self, msg):
         if self.device == None:
             raise Exception("device is null")
 
         self.device.shell("log -pi -t {} \"{}\"".format(self.TAG, msg))
 
+    def push_file(self, source: str, dest: str):
+        if self.device == None:
+            raise Exception("device is null")
+        if source == None or source == "":
+            return
+        if dest == None or dest == "":
+            return
+
+        srcpath = "{}/testcases/files/{}".format(pathlib.Path().resolve(), source)
+        if not exists(srcpath):
+            print("{} is not exists".format(srcpath))
+            return
+
+        self.device.sync.push(srcpath, dest)
+
+    def root(self):
+        if self.device == None:
+            raise Exception("device is null")
+
+        self.device.root()
+        time.sleep(1.2)
+        if self.ip == None:
+            self.open(self.serialno)
+        else:
+            reconnect_ip()
+
 class logi_android(android_device):
     def disalbe_whitelist(self):
         if self.device == None:
             raise Exception("device is null")
         
-        self.device.root()
+        self.root()
         self.device.shell("setprop persist.logitech.platform.security.app_whitelist_enable false")

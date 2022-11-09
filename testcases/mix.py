@@ -17,12 +17,28 @@ def meetup_power_init():
     ns.ha = c.iot.hass()
     ns.ha.set_auth(auth)
     ns.ha.set_url(url)
-    ns.d = c.atari.dev()
-    ns.d.open("2129FDJS9QG2")
+    ns.video_start = 4
+    ns.video_current = 4
+    ns.video_end = 10
+    ns.d = c.sega.dev()
+    ns.d.open("2123FDGM05D2")
+    ns.d.push_file("keep_video", "/data/local/tmp/keep_video")
+    ns.d.root()
     return ns
+
+def grip_video(dev, name):
+    dev.log_message("grip /dev/video{}".format(name))
+    dev.shell("/data/local/tmp/keep_video /dev/video{}".format(name))
 
 def meetup_power_action(ns):
     time.sleep(random.uniform(59, 67))
+
+    if ns.video_current <= ns.video_end:
+        t = threading.Thread(target = grip_video, args = (ns.d, ns.video_current))
+        c.append_thread(t)
+        ns.video_current += 1
+        print("next lock video{}".format(ns.video_current))
+
     ns.d.log_message("trun off meetup")
     ns.ha.switch("switch.zhong_jian_dian_shan", False)
     time.sleep(0.5)
@@ -31,7 +47,7 @@ def meetup_power_action(ns):
 
 def av_process_init():
     ns = sns()
-    ns.repeat = 180
+    ns.repeat = 280
     ns.d = c.atari.dev()
     ns.d.open("2129FDJS9QG2")
     return ns
@@ -46,9 +62,6 @@ def run():
     c.run_test(initfunc = meetup_power_init, actionfunc = meetup_power_action)
     c.run_test(initfunc = av_process_init, actionfunc = av_process_action)
     c.end_test()
-
-def test():
-    print("yes {}".format(123))
 
 if __name__ == '__main__':
     run()

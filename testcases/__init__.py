@@ -16,6 +16,6 @@ def run(module):
     modules = list_testscripts()
 
     if module in modules:
-        exec(globals()[module].run())
+        globals()[module].run()
     else:
         print("{} is not exist".format(module))
